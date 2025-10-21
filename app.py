@@ -10,6 +10,8 @@ import time
 import streamlit as st
 from streamlit_cropper import st_cropper
 
+# Importar extractores
+from creacion_index import extract_rgb_histogram
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
@@ -35,8 +37,8 @@ def retrieve_image(img_query, feature_extractor, n_imgs=11):
     if (feature_extractor == 'Extractor 1'):
         # TODO: select the database according to the feature extractor
         # Function to preprocess and extract features
-        model_feature_extractor = ...
-        indexer = faiss.read_index(os.path.join(DB_PATH,  'feat_extract_1.index'))
+        model_feature_extractor = extract_rgb_histogram
+        indexer = faiss.read_index(os.path.join(DB_PATH,  'extract_rgb_histogram.index'))
     elif (feature_extractor == 'Extractor 2'):
         model_feature_extractor = ...
         indexer = faiss.read_index(os.path.join(DB_PATH,  'feat_extract_2.index'))
