@@ -5,8 +5,8 @@ import faiss
 from pathlib import Path
 
 # Carpetas
-IMAGES_FOLDER = Path("./images")  # imágenes de entrenamiento
-DB_PATH = Path("./database")
+IMAGES_FOLDER = Path("../images")  # imágenes de entrenamiento
+DB_PATH = Path("../database")
 DB_PATH.mkdir(exist_ok=True)
 
 # Archivos
@@ -46,3 +46,5 @@ faiss.write_index(index, str(DB_PATH / INDEX_FILE))
 pd.DataFrame({'image': image_files}).to_csv(DB_PATH / DB_FILE, index=False)
 
 print(f"✅ FAISS index y CSV creados con {len(image_files)} imágenes")
+print(features.shape)
+print(index.code_size)

@@ -1,4 +1,3 @@
-import time
 import torch
 import faiss
 import pathlib
@@ -11,7 +10,7 @@ import streamlit as st
 from streamlit_cropper import st_cropper
 
 # Importar extractores
-from creacion_index import extract_rgb_histogram
+from extractors.extract_rgb_histogram import extract_rgb_histogram
 
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 
