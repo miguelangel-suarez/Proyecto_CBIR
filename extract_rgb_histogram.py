@@ -5,8 +5,8 @@ import faiss
 from pathlib import Path
 
 # Carpetas
-IMAGES_FOLDER = Path("../images")  # imágenes de entrenamiento
-DB_PATH = Path("../database")
+IMAGES_FOLDER = Path("images")  # imágenes de entrenamiento
+DB_PATH = Path("database")
 DB_PATH.mkdir(exist_ok=True)
 
 # Archivos
