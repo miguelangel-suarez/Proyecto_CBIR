@@ -10,9 +10,15 @@ import streamlit as st
 from streamlit_cropper import st_cropper
 
 # Importar extractores
-from extract_rgb_histogram import extract_rgb_histogram
+from extractores import (
+    extract_rgb_histogram,
+    extract_vgg19,
+    extract_inceptionv3,
+    extract_mobilenet,
+    extract_segmentation
+)
 
-os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 st.set_page_config(layout="wide")
 
@@ -25,31 +31,62 @@ IMAGES_PATH = os.path.join(FILES_PATH, 'images')
 # Path in which the database should be located
 DB_PATH = os.path.join(FILES_PATH, 'database')
 
-DB_FILE = 'db.csv' # name of the database
+DB_FILE = 'db.csv'  # CSV con nombres de imagenes
+
 
 def get_image_list():
     df = pd.read_csv(os.path.join(DB_PATH, DB_FILE))
     image_list = list(df.image.values)
     return image_list
 
-def retrieve_image(img_query, feature_extractor, n_imgs=11):
-    if (feature_extractor == 'Extractor 1'):
-        # TODO: select the database according to the feature extractor
-        # Function to preprocess and extract features
-        model_feature_extractor = extract_rgb_histogram
-        indexer = faiss.read_index(os.path.join(DB_PATH,  'extract_rgb_histogram.index'))
-    elif (feature_extractor == 'Extractor 2'):
-        model_feature_extractor = ...
-        indexer = faiss.read_index(os.path.join(DB_PATH,  'feat_extract_2.index'))
 
-    # TODO: Modify accordingly
+def get_percentage(label_list: list, img_name: str):
+    # Extraer la etiqueta de la imagen de test a partir de su ruta
+    # name = os.path.splitext(os.path.basename(img_name))[0]
+    real_label = img_name.rsplit('_', 1)[0]
+    print(real_label)
+    # Realizar el cálculo
+    counter = label_list.count(real_label)
+    percentage = (counter / len(label_list)) * 100
+    return round(percentage, 2)
+
+
+def get_label_list(retriev: list):
+    df = pd.read_csv(os.path.join(DB_PATH, DB_FILE))
+    all_labels = list(df.etiqueta.values)
+    label_list = []
+    for value in retriev:
+        label = all_labels[value]
+        label_list.append(label)
+    return label_list
+
+
+def retrieve_image(img_query, feature_extractor, n_imgs=11):
+    if feature_extractor == 'RGB Histogram':
+        model_feature_extractor = extract_rgb_histogram
+        indexer = faiss.read_index(os.path.join(DB_PATH, 'extract_rgb_histogram.index'))
+    elif feature_extractor == 'VGG19':
+        model_feature_extractor = extract_vgg19
+        indexer = faiss.read_index(os.path.join(DB_PATH, 'extract_vgg19.index'))
+    elif feature_extractor == 'InceptionV3':
+        model_feature_extractor = extract_inceptionv3
+        indexer = faiss.read_index(os.path.join(DB_PATH, 'extract_inceptionv3.index'))
+    elif feature_extractor == 'MobileNet':
+        model_feature_extractor = extract_mobilenet
+        indexer = faiss.read_index(os.path.join(DB_PATH, 'extract_mobilenet.index'))
+    elif feature_extractor == 'DeepLabV3':
+        model_feature_extractor = extract_segmentation
+        indexer = faiss.read_index(os.path.join(DB_PATH, 'extract_segmentation.index'))
+    else:
+        raise ValueError(f"Extractor '{feature_extractor}' no definido")
+
+    # Extraer características y normalizar
     embeddings = model_feature_extractor(img_query)
     vector = np.float32(embeddings)
     faiss.normalize_L2(vector)
 
+    # Buscar en el índice
     distancias, indices = indexer.search(vector, k=n_imgs)
-    distancias = np.round(distancias, 3)
-
     return distancias[0], indices[0]
 
 def main():
@@ -61,65 +98,73 @@ def main():
         st.header('QUERY')
 
         st.subheader('Choose feature extractor')
-        # TODO: Adapt to the type of feature extraction methods used.
-        option = st.selectbox('.', ('Extractor 1', 'Extractor 2'))
+        option = st.selectbox(' ', (
+            'RGB Histogram',
+            'VGG19',
+            'InceptionV3',
+            'MobileNet',
+            'DeepLabV3'
+        ))
 
         st.subheader('Upload image')
-        img_file = st.file_uploader(label='.', type=['png', 'jpg'])
+        img_file = st.file_uploader(label=' ', type=['png', 'jpg'])
 
         if img_file:
             img = Image.open(img_file)
-            # Get a cropped image from the frontend
+            # Obtener imagen recortada
             cropped_img = st_cropper(img, realtime_update=True, box_color='#FF0004')
             
-            # Manipulate cropped image at will
             st.write("Preview")
             _ = cropped_img.thumbnail((150,150))
             st.image(cropped_img)
 
     with col2:
-        st.header('RESULT')
+        st.header('RESULTS')
         if img_file:
             st.markdown('**Retrieving .......**')
             start = time.time()
 
             dist, retriev = retrieve_image(cropped_img, option, n_imgs=11)
             image_list = get_image_list()
+            label_list = get_label_list(retriev)
+            porcentaje = get_percentage(label_list, img_file.name)
 
             end = time.time()
             st.markdown('**Finish in ' + str(end - start) + ' seconds**')
+            st.subheader(f"{porcentaje}%")
 
             col3, col4 = st.columns(2)
 
             with col3:
+                st.write(f"{label_list[0]} - Distancia: {round(dist[0], 3):.3f}")
                 image = Image.open(os.path.join(IMAGES_PATH, image_list[retriev[0]]))
                 st.image(image, use_container_width = 'always')
-                st.write(f"Distancia: {dist[0]}, con Indice: {retriev[0]}")
 
             with col4:
+                st.write(f"{label_list[1]} - Distancia: {round(dist[1], 3):.3f}")
                 image = Image.open(os.path.join(IMAGES_PATH, image_list[retriev[1]]))
                 st.image(image, use_container_width = 'always')
-                st.write(f"Distancia: {dist[1]}, con Indice: {retriev[1]}")
 
             col5, col6, col7 = st.columns(3)
 
             with col5:
                 for u in range(2, 11, 3):
+                    st.write(f"{label_list[u]} - Distancia: {round(dist[u], 3):.3f}")
                     image = Image.open(os.path.join(IMAGES_PATH, image_list[retriev[u]]))
                     st.image(image, use_container_width = 'always')
-                    st.write(f"Distancia: {dist[u]}, con Indice: {retriev[u]}")
 
             with col6:
                 for u in range(3, 11, 3):
+                    st.write(f"{label_list[u]} - Distancia: {round(dist[u], 3):.3f}")
                     image = Image.open(os.path.join(IMAGES_PATH, image_list[retriev[u]]))
                     st.image(image, use_container_width = 'always')
-                    st.write(f"Distancia: {dist[u]}, con Indice: {retriev[u]}")
 
             with col7:
                 for u in range(4, 11, 3):
+                    st.write(f"{label_list[u]} - Distancia: {round(dist[u], 3):.3f}")
                     image = Image.open(os.path.join(IMAGES_PATH, image_list[retriev[u]]))
                     st.image(image, use_container_width = 'always')
-                    st.write(f"Distancia: {dist[u]}, con Indice: {retriev[u]}")
+
 
 if __name__ == '__main__':
     main()
