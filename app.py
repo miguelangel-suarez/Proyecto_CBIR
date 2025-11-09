@@ -137,29 +137,29 @@ def main():
             with col3:
                 st.write(f"{label_list[0]} - Distancia: {dist[0]:.3f}")
                 image = Image.open(os.path.join(IMAGES_PATH, image_list[retriev[0]]))
-                st.image(image, use_column_width=True)
+                st.image(image, use_container_width=True)
 
             with col4:
                 st.write(f"{label_list[1]} - Distancia: {dist[1]:.3f}")
                 image = Image.open(os.path.join(IMAGES_PATH, image_list[retriev[1]]))
-                st.image(image, use_column_width=True)
+                st.image(image, use_container_width=True)
 
             col5, col6, col7 = st.columns(3)
             with col5:
                 for u in range(2, 11, 3):
                     st.write(f"{label_list[u]} - Distancia: {dist[u]:.3f}")
                     image = Image.open(os.path.join(IMAGES_PATH, image_list[retriev[u]]))
-                    st.image(image, use_column_width=True)
+                    st.image(image, use_container_width=True)
             with col6:
                 for u in range(3, 11, 3):
                     st.write(f"{label_list[u]} - Distancia: {dist[u]:.3f}")
                     image = Image.open(os.path.join(IMAGES_PATH, image_list[retriev[u]]))
-                    st.image(image, use_column_width=True)
+                    st.image(image, use_container_width=True)
             with col7:
                 for u in range(4, 11, 3):
                     st.write(f"{label_list[u]} - Distancia: {dist[u]:.3f}")
                     image = Image.open(os.path.join(IMAGES_PATH, image_list[retriev[u]]))
-                    st.image(image, use_column_width=True)
+                    st.image(image, use_container_width=True)
 
 
 if __name__ == '__main__':
