@@ -1,0 +1,14 @@
+version: '3.8'
+
+services:
+  app-cbir:
+    build: .
+    container_name: CBIR
+    ports:
+      - "8501:8501"
+    volumes:
+      # OPCIONAL: Montar la carpeta database local.
+      # Útil si actualizas tus índices FAISS en tu ordenador y quieres
+      # probarlos sin tener que reconstruir (build) la imagen de Docker.
+      - ./database:/app/database
+    restart: unless-stopped
