@@ -3,7 +3,7 @@
 
 Este archivo Python es el responsable de coger todas las imágenes de entrenamiento (guardadas en la carpeta de "images"),
 y crear los embeddings correspondientes a cada imagen según el extractor de características definido.
-Además, este archivo esta encargado de crear las 5 tablas FAISS donde guardar el embedding de cada imagen según el
+Además, este archivo esta encargado de crear las 4 tablas FAISS donde guardar el embedding de cada imagen según el
 extractor de características pasado. Consecuentemente, los índices de dichas imagenes guardadas en FAISS se
 almacenan dentro de un archivo CSV donde para cada índice guardar también el path de la imagen real (dentro de
 los directorios de este proyecto) y la etiqueta final correspondiente a la clase a la que pertenece dicha imagen.
